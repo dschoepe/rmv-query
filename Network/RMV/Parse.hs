@@ -53,5 +53,3 @@ t1 ^-^ t2 = (h1 - h2) * 60 + (m1 - m2)
 -- | Returns all routes found in a given list of Tags
 collectInfo :: [Tag] -> [[RouteInfo]]
 collectInfo = map (\(n,x) -> catMaybes . map (parseRoute n) . routes $ x) . zip [0..] . tables
-
-testIt f = f . parseTags <$> readFile "/home/dschoepe/test.html"
