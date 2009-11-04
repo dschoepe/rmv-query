@@ -1,0 +1,7 @@
+===== Installation =====
+See http://www.haskell.org/haskellwiki/Cabal/How_to_install_a_Cabal_package
+===== Usage ====
+See rmv-query --help for details.
+Example: rmv-query --from Frankfurt --to Darmstadt,Luisenplatz --when 12:00
+
+Notes: This is experimental software and probably has several bugs.
