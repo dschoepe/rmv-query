@@ -1,4 +1,4 @@
-Name:                rmv
+Name:                rmv-query
 Version:             0.0
 Description:         Command-line interface to RMV's website
 License:             GPL
@@ -8,6 +8,6 @@ Maintainer:          daniel.schoepe@googlemail.com
 Build-Type:          Simple
 Cabal-Version:       >=1.2
 
-Executable rmv
+Executable rmv-query
   Main-is:           RMV.hs
   Build-Depends:     base >= 3 && < 5, network, tagsoup >= 0.5, HTTP>=4000, old-time
