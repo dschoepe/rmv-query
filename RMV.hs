@@ -77,7 +77,8 @@ parseConfig file = do
   if exists
      then do
        let pairToList (x,y) = [x,y]
-       args <- concatMap (pairToList . second tail . break (==' ')) . lines <$> readFile file
+           toOptions = concatMap $ pairToList . second tail . break (==' ')
+       args <- toOptions . filter (not . null) . lines <$> readFile file
        case getOpt Permute options args of
          (o,n,[]) -> return . Just . mconcat $ o
          (_,_,errs) -> do
