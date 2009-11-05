@@ -23,6 +23,7 @@ ppRoute (Options{..}) (RouteInfo {..}) =
                , ("start_time", riStartTime)
                , ("start", riStartPoint)
                , ("end", riEndPoint)
+               , ("line", riLine)
                , ("end_time", riEndTime) ]
     where fromString = B.pack . map (toEnum . fromEnum)
 
