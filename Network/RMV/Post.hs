@@ -1,9 +1,11 @@
+{-# LANGUAGE RecordWildCards #-}
 module Network.RMV.Post
     (sendRequest) where
 
 import Network.RMV.Types
 import Network.RMV.Output
 
+import Data.Char
 import Data.List
 import Data.Maybe
 import Network.Browser
@@ -50,10 +52,17 @@ reqBody opts = do
 
 userAgentMimicIE = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; InfoPath.1)"
 
+expandAliases :: Options -> Options
+expandAliases opts@(Options{..}) =
+    opts { opStartPoint = expand opStartPoint
+         , opEndPoint = expand opEndPoint }
+    where expand s = maybe s snd $ find ((~=s) . fst) aliases
+          a ~= b = map toLower a == map toLower b
+
 -- | Sends a request with the specified options
 sendRequest :: Options -> IO String
 sendRequest opts = do
-  req <- reqBody opts
+  req <- reqBody $ expandAliases opts
   rsp <- Network.Browser.browse $ do
           setAllowRedirects True
           setOutHandler $ const (return ())

@@ -1,7 +1,13 @@
 ===== Installation =====
 See http://www.haskell.org/haskellwiki/Cabal/How_to_install_a_Cabal_package
-===== Usage ====
+===== Usage =====
 See rmv-query --help for details.
 Example: rmv-query --from Frankfurt --to Darmstadt,Luisenplatz --when 12:00
 
-Notes: This is experimental software and probably has several bugs.
+===== Configuration =====
+Each of the command-line flags can be set as a default in the configuration
+file(~/.rmv-query). Each line must contain exactly one flag. E.g.:
+--from Luisenplatz
+--when 8:00
+
+Note: This is experimental software and probably has several bugs.

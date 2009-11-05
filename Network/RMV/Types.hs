@@ -15,6 +15,8 @@ data Options = Options { opStartPoint :: String
                        , opTime :: Maybe String
                        , opDate :: Maybe String
                        , opCount :: Maybe Int
+                       , opConfigFile :: Maybe String
+                       , aliases :: [(String,String)]
                        , showHelp :: Bool }
 
 defaultOptions = Options { opStartPoint = ""
@@ -22,5 +24,7 @@ defaultOptions = Options { opStartPoint = ""
                          , opTime = Nothing
                          , opDate = Nothing
                          , showHelp = False
+                         , aliases = []
+                         , opConfigFile = Nothing
                          , opCount = Nothing }
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+import Control.Arrow
 import Control.Applicative
 import Data.Monoid
 import Data.Maybe
@@ -11,6 +12,7 @@ import Network.RMV.Types
 import Text.HTML.TagSoup
 import System.Console.GetOpt
 import System.Environment
+import System.Directory
 
 options :: [OptDescr (Endo Options)]
 options =
@@ -29,9 +31,17 @@ options =
     , Option ['d'] ["date"]
       (ReqArg (\s -> Endo $ \o -> o { opDate = Just s }) "date")
       "Desired date"
-    , Option ['w'] ["when","time"]
+    , Option ['T','w'] ["when","time"]
       (ReqArg (\s -> Endo $ \o -> o { opTime = Just s }) "time")
       "Desired time"
+    , Option ['C'] ["config"]
+      (ReqArg (\s -> Endo $ \o -> o { opConfigFile = Just s}) "config")
+      "Path to configuration file(default is ~/.rmv-query)"
+    , Option ['a'] ["aliases"]
+      (ReqArg (\s -> Endo $ \o -> o { aliases = concatMap fst (reads s) ++ aliases o }) "aliases")
+      ("Aliases for destinations or starting points. Expected in this form:\n"++
+       "[(\"alias\",\"normal name\"),(\"other alias\",\"other name\")]\n" ++
+       "This option is intended mainly for the use in your configuration and can occur multiple times.")
     ]
     where safeRead x = case reads x of
                          [(x,[])] -> Just x
@@ -47,26 +57,41 @@ getMultipleRoutes opts@(Options {..}) = do
   case rs of
     [] -> return []
     _ | resultLength >= count -> return . take count $ rs
-      | otherwise -> do 
+      | otherwise -> do
             next <- getMultipleRoutes opts { opCount = subtract resultLength <$> opCount
                                           , opTime = Just . riEndTime . last . last $ rs }
             return . take count $ rs ++ next
 
+parseConfig :: FilePath -> IO (Maybe (Endo Options))
+parseConfig file = do
+  exists <- doesFileExist file
+  if exists
+     then do
+       let pairToList (x,y) = [x,y]
+       args <- concatMap (pairToList . second tail . break (==' ')) . lines <$> readFile file
+       case getOpt Permute options args of
+         (o,n,[]) -> return . Just . mconcat $ o
+         (_,_,errs) -> do
+              putStrLn $ "Errors in configuration file\n" ++ concat errs
+              return Nothing
+     else putStrLn "Specified configuration file does not exist, using default options" >>
+          return Nothing
+
 parseOpts args =
     case getOpt Permute options args of
-      (o,n,[]) -> return $ mconcat o `appEndo` defaultOptions
-      (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "USAGE:" options))
+      (o,n,[]) -> return $ mconcat o
+      (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "USAGE: rmv-query [OPTIONS]" options))
 
 main = do
-  opts <- parseOpts =<< getArgs
+  optEndo <- parseOpts =<< getArgs
+  let opts = optEndo `appEndo` defaultOptions
   if showHelp opts
      then putStrLn $ usageInfo "USAGE:" options
      else do
-       routes <- getMultipleRoutes opts
+       defaultConfig <- (++"/.rmv-query") <$> getHomeDirectory
+       configEndo <- parseConfig . fromMaybe defaultConfig . opConfigFile $ opts
+       let opts' = maybe mempty (optEndo `mappend`) configEndo `appEndo` opts
+       routes <- getMultipleRoutes opts'
        if null routes
           then putStrLn "Could not find any routes"
           else ppResult routes
-
-testOpts = defaultOptions { opStartPoint = "kopernikusplatz"
-                          , opEndPoint = "darmstadt, schloß"
-                          , opCount = Just 3 }
