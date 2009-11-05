@@ -42,6 +42,15 @@ options =
       ("Aliases for destinations or starting points. Expected in this form:\n"++
        "[(\"alias\",\"normal name\"),(\"other alias\",\"other name\")]\n" ++
        "This option is intended mainly for the use in your configuration and can occur multiple times.")
+    , Option [] ["template"]
+      (ReqArg (\s -> Endo $ \o -> o { opTemplate = s }) "template")
+      ("Template to use for displaying a route. Available variables are:\n"++
+       "$duration - duration of the route\n"++
+       "$start_time - time of departure at stop\n"++
+       "$end_time - time of arrival at next stop\n"++
+       "$start - Name of starting point(e.g. Frankfurt)\n"++
+       "$end - Name of end point(e.g. Darmstadt)"
+      )
     ]
     where safeRead x = case reads x of
                          [(x,[])] -> Just x
@@ -77,16 +86,18 @@ parseConfig file = do
      else putStrLn "Specified configuration file does not exist, using default options" >>
           return Nothing
 
+myUsageInfo = usageInfo "USAGE: rmv-query [OPTIONS]" options
+
 parseOpts args =
     case getOpt Permute options args of
       (o,n,[]) -> return $ mconcat o
-      (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "USAGE: rmv-query [OPTIONS]" options))
+      (_,_,errs) -> ioError (userError (concat errs ++ myUsageInfo))
 
 main = do
   optEndo <- parseOpts =<< getArgs
   let opts = optEndo `appEndo` defaultOptions
   if showHelp opts
-     then putStrLn $ usageInfo "USAGE:" options
+     then putStrLn myUsageInfo
      else do
        defaultConfig <- (++"/.rmv-query") <$> getHomeDirectory
        configEndo <- parseConfig . fromMaybe defaultConfig . opConfigFile $ opts
@@ -94,4 +105,4 @@ main = do
        routes <- getMultipleRoutes opts'
        if null routes
           then putStrLn "Could not find any routes"
-          else ppResult routes
+          else ppResult opts' routes

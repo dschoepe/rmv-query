@@ -17,6 +17,7 @@ data Options = Options { opStartPoint :: String
                        , opCount :: Maybe Int
                        , opConfigFile :: Maybe String
                        , aliases :: [(String,String)]
+                       , opTemplate :: String
                        , showHelp :: Bool }
 
 defaultOptions = Options { opStartPoint = ""
@@ -25,6 +26,7 @@ defaultOptions = Options { opStartPoint = ""
                          , opDate = Nothing
                          , showHelp = False
                          , aliases = []
+                         , opTemplate = "$duration | $start_time $start -< $line >- $end $end_time"
                          , opConfigFile = Nothing
                          , opCount = Nothing }
 
