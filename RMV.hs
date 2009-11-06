@@ -13,6 +13,7 @@ import Text.HTML.TagSoup
 import System.Console.GetOpt
 import System.Environment
 import System.Directory
+import System.IO
 
 options :: [OptDescr (Endo Options)]
 options =
@@ -77,12 +78,14 @@ parseConfig file = do
   if exists
      then do
        let pairToList (x,y) = [x,y]
-           toOptions = concatMap $ pairToList . second tail . break (==' ')
+           toOptions = concatMap $ pairToList . second tail' . break (==' ')
+           tail' [] = []
+           tail' (x:xs) = xs
        args <- toOptions . filter (not . null) . lines <$> readFile file
        case getOpt Permute options args of
          (o,n,[]) -> return . Just . mconcat $ o
          (_,_,errs) -> do
-              putStrLn $ "Errors in configuration file\n" ++ concat errs
+              hPutStrLn stderr $ "Errors in configuration file\n" ++ concat errs
               return Nothing
      else putStrLn "Specified configuration file does not exist, using default options" >>
           return Nothing
