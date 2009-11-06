@@ -6,8 +6,8 @@ Example: rmv-query --from Frankfurt --to Darmstadt,Luisenplatz --when 12:00
 
 ===== Configuration =====
 Each of the command-line flags can be set as a default in the configuration
-file(~/.rmv-query). Each line must contain exactly one flag. E.g.:
+file(~/.rmv-query). Each line must be either empty or contain exactly one option. E.g.:
 --from Luisenplatz
 --when 8:00
 
-Note: This is experimental software and probably has several bugs.
+--aliases [("ffm","frankfurt"),("da","darmstadt")]
