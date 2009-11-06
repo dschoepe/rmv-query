@@ -50,7 +50,8 @@ options =
        "$start_time - time of departure at stop\n"++
        "$end_time - time of arrival at next stop\n"++
        "$start - Name of starting point(e.g. Frankfurt)\n"++
-       "$end - Name of end point(e.g. Darmstadt)"
+       "$end - Name of end point(e.g. Darmstadt)\n"++
+       "$line - Which line to use"
       )
     ]
     where safeRead x = case reads x of
