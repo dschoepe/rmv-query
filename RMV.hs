@@ -52,7 +52,7 @@ options =
        "$end_time - time of arrival at next stop\n"++
        "$start - Name of starting point(e.g. Frankfurt)\n"++
        "$end - Name of end point(e.g. Darmstadt)\n"++
-       "$line - Which line to use\n"++
+       "$line - Which line to use(e.g. Bus 671)\n"++
        "$newline - Newline"
       )
     ]
