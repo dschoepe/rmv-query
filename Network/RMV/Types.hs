@@ -2,12 +2,12 @@ module Network.RMV.Types
     (RouteInfo(..),Options(..),defaultOptions)
         where
 
-data RouteInfo = RouteInfo { riStartTime :: String
-                           , riEndTime :: String
+data RouteInfo = RouteInfo { riStartTime :: Maybe String
+                           , riEndTime :: Maybe String
                            , riStartPoint :: String
                            , riLine :: String
                            , riEndPoint :: String
-                           , riDuration :: Int
+                           , riDuration :: Maybe Int
                            } deriving (Read,Show)
 
 data Options = Options { opStartPoint :: String

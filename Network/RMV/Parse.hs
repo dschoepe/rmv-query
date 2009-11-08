@@ -24,31 +24,52 @@ routes = pairList . init . partitions (~== "<tr class=\"tpDetails \">")
 firstText :: [Tag] -> Maybe String
 firstText = fmap fromTagText . listToMaybe . filter isTagText
 
+firstSectionText :: (Tag -> Bool) -> [Tag] -> Maybe String
+firstSectionText pred = firstText <=< listToMaybe . sections pred
+
+safeRead :: Read a => String -> Maybe a
+safeRead x = case reads x of
+               [(x,[])] -> Just x
+               _ -> Nothing
+
 titleP :: (String -> Bool) -> [Attribute] -> Bool
 titleP p = anyAttr $ \(n,x) -> n == "title" && p x
 
+line :: Int -> [Tag] -> Maybe String
+line num = altText <=< getImgTag <=< findSection
+    where altText = find (/="") . pure . fromAttrib "alt"
+          getImgTag = nth' 1 . filter isTagOpen
+          findSection = listToMaybe . sections (~==lineInfo)
+          lineInfo = "<td headers=\"hafasDTL"++show num++"_Products\">"
+          nth' n lst | length lst > n = Just $ lst !! n
+                     | otherwise = Nothing
+
 parseRoute :: Int -> ([Tag],[Tag]) -> Maybe RouteInfo
 parseRoute num (from,to) = do
-  let name = firstText <=< listToMaybe . sections isNameTag
+  let name = firstSectionText isNameTag
       isNameTag = tagOpen (=="a") (titleP ("Haltestelleninformation:" `isPrefixOf`))
-      time x = fmap (filter (/='\n')) . firstText <=< listToMaybe . sections (~==x)
-  line <- firstText =<< listToMaybe (sections (~=="<a title=Fahrtinformation>") from)
-  depTime <- time ("<td headers=\"hafasDTL"++show num ++"_TimeDep\">") from
-  arrTime <- time ("<td headers=\"hafasDTL"++show num ++"_TimeArr\">") to
+      time x = fmap (filter (/='\n')) . firstSectionText (~==x)
+  line' <- line num to `mplus` line num from
+  let depTime = time ("<td headers=\"hafasDTL"++show num ++"_TimeDep\">") from
+      arrTime = time ("<td headers=\"hafasDTL"++show num ++"_TimeArr\">") to
   start <- name from
   end <- name to
   return RouteInfo { riStartPoint = start
                    , riEndPoint = end
                    , riStartTime = depTime
                    , riEndTime = arrTime
-                   , riDuration = arrTime ^-^ depTime
-                   , riLine = line}
+                   , riDuration = join $ (^-^) <$> arrTime <*> depTime
+                   , riLine = line'
+                   }
 
-(^-^) :: String -> String -> Int
-t1 ^-^ t2 = (h1 - h2) * 60 + (m1 - m2)
-    where (h1,m1) = break' t1
-          (h2,m2) = break' t2
-          break' = (read *** read) . second tail . break (==':')
+(^-^) :: String -> String -> Maybe Int
+t1 ^-^ t2 = do
+  let break' = fromPair . (safeRead *** safeRead) . second tail . break (==':')
+      fromPair (Just x,Just y) = Just (x,y)
+      fromPair _ = Nothing
+  (h1,m1) <- break' t1
+  (h2,m2) <- break' t2
+  return $ (h1 - h2) * 60 + (m1 - m2)
 
 -- | Returns all routes found in a given list of Tags
 collectInfo :: [Tag] -> [[RouteInfo]]

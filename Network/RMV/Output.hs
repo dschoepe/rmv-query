@@ -6,9 +6,11 @@ import Network.RMV.Types
 
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Map as M
+import Control.Applicative
 import Control.Arrow
 import Control.Monad
 import Data.List
+import Data.Maybe
 import Text.Template
 
 ppTime :: Int -> String
@@ -19,12 +21,12 @@ ppRoute :: Options -> RouteInfo -> String
 ppRoute (Options{..}) (RouteInfo {..}) =
     map (toEnum . fromEnum) . B.unpack . substitute (fromString opTemplate) .
     M.fromList . map (fromString *** fromString) $
-               [ ("duration", ppTime riDuration)
-               , ("start_time", riStartTime)
+               [ ("duration", maybe "" ppTime riDuration)
+               , ("start_time", fromMaybe "" riStartTime)
                , ("start", riStartPoint)
                , ("end", riEndPoint)
                , ("line", riLine)
-               , ("end_time", riEndTime)
+               , ("end_time", fromMaybe "" riEndTime)
                , ("newline","\n")
                ]
     where fromString = B.pack . map (toEnum . fromEnum)
@@ -35,5 +37,6 @@ ppResult opts = mapM_ printDetails . zip [1..]
             putStrLn ("Route "++show n++":")
             mapM_ printRoute rs
             when (length rs > 1) $
-                 putStrLn $ "Total duration: " ++ ppTime (sum . map riDuration $ rs)
+                 let totDur = fmap (ppTime . sum) . sequence . map riDuration $ rs
+                 in maybe (return ()) (putStrLn . ("Total duration: "++)) totDur
           printRoute = putStrLn . ppRoute opts

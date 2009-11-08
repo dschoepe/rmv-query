@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 import Control.Arrow
 import Control.Applicative
+import Control.Monad
 import Data.Monoid
 import Data.Maybe
 
@@ -70,8 +71,11 @@ getMultipleRoutes opts@(Options {..}) = do
     [] -> return []
     _ | resultLength >= count -> return . take count $ rs
       | otherwise -> do
+            let maxTime = msum . map (\r -> riEndTime r `mplus` riStartTime r) . reverse
+                maxTime :: [RouteInfo] -> Maybe String
+                newTime = msum . map maxTime $ rs
             next <- getMultipleRoutes opts { opCount = subtract resultLength <$> opCount
-                                          , opTime = Just . riEndTime . last . last $ rs }
+                                          , opTime = newTime }
             return . take count $ rs ++ next
 
 parseConfig :: FilePath -> IO (Maybe (Endo Options))
