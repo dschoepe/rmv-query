@@ -24,7 +24,9 @@ ppRoute (Options{..}) (RouteInfo {..}) =
                , ("start", riStartPoint)
                , ("end", riEndPoint)
                , ("line", riLine)
-               , ("end_time", riEndTime) ]
+               , ("end_time", riEndTime)
+               , ("newline","\n")
+               ]
     where fromString = B.pack . map (toEnum . fromEnum)
 
 ppResult :: Options -> [[RouteInfo]] -> IO ()
