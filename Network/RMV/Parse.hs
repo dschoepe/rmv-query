@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns, RecordWildCards, ViewPatterns #-}
 module Network.RMV.Parse
-    (collectInfo) where
+    (collectInfo,safeRead) where
 
 import Control.Arrow
 import Control.Applicative

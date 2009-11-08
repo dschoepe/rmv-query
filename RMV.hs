@@ -56,9 +56,6 @@ options =
        "$newline - Newline"
       )
     ]
-    where safeRead x = case reads x of
-                         [(x,[])] -> Just x
-                         _ -> Nothing
 
 getRoutes opts = collectInfo . parseTags <$> sendRequest opts
 
