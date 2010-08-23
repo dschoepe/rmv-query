@@ -10,5 +10,5 @@ Cabal-Version:       >=1.2
 
 Executable rmv-query
   Main-is:           RMV.hs
-  Build-Depends:     base >= 3 && < 5, network, tagsoup >= 0.5, HTTP>=4000, old-time,
+  Build-Depends:     base >= 3 && < 5, network, tagsoup >= 0.6 && < 0.8, HTTP>=4000, old-time,
                      directory, template, bytestring, containers

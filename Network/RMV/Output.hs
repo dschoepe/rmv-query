@@ -21,8 +21,8 @@ ppRoute :: Options -> RouteInfo -> String
 ppRoute (Options{..}) (RouteInfo {..}) =
     map (toEnum . fromEnum) . B.unpack . substitute (fromString opTemplate) .
     M.fromList . map (fromString *** fromString) $
-               [ ("duration", maybe "" ppTime riDuration)
-               , ("start_time", fromMaybe "" riStartTime)
+               [ ("duration", maybe "     " ppTime riDuration)
+               , ("start_time", fromMaybe "     " riStartTime)
                , ("start", riStartPoint)
                , ("end", riEndPoint)
                , ("line", riLine)
